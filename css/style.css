@@ -617,7 +617,19 @@ th {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh; /* Make the box take the full height of the viewport */
 }
+
+body {
+  margin: 0; /* Remove default margin */
+  display: flex; /* Ensure the body spans full height */
+  flex-direction: column;
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
+  min-height: 100vh; /* Makes sure the body stretches the full height */
+  background-color: #f0f2f5; /* Optional: background color for the page */
+}
+
 .signin-container {
   background-color: #ffffff;
   border-radius: 8px;
