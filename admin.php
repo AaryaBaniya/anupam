@@ -1,11 +1,11 @@
-<?php
-// Database connection settings
+<?php 
+// Database connection 
 $servername = "localhost";
-$username = "root"; // Replace with your database username
-$password = ""; // Replace with your database password
-$dbname = "login"; // Database name
+$username = "root"; 
+$password = ""; 
+$dbname = "login"; 
 
-// Create connection
+// Connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
@@ -18,9 +18,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $inputUsername = $_POST['username'];
     $inputPassword = $_POST['password'];
 
-    // Query to check admin credentials
-    $sql = "SELECT * FROM adminlogin WHERE username = 'admin' AND password = 'admin'"; // Ensure 'users' is your table name
-    $result = $conn->query($sql);
+    // Use prepared statements to prevent SQL injection
+    $stmt = $conn->prepare("SELECT * FROM adminlogin WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $inputUsername, $inputPassword); // "ss" specifies the type of parameters as string
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         // Redirect to the admin dashboard
@@ -28,8 +30,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     } else {
         echo "<script>alert('Invalid username or password!');</script>";
-        echo "<script>window.location.href='index.html';</script>"; // Replace with the login form page if necessary
+        echo "<script>window.location.href='adminlogin.html';</script>"; 
     }
+
+    $stmt->close();
 }
 
 $conn->close();

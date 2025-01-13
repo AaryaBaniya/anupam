@@ -12,13 +12,13 @@
     <header class="page-header">
       <div class="wrapper">
         <div class="logo">
-          <a href="index.html">
+          <a href="index.php">
             <img class="img" src="Images/logo.png" alt="logo" />
           </a>
         </div>
         <nav class="main-nav">
           <ul>
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.php">Home</a></li>
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="signup.php">Sign Up</a></li>
@@ -29,7 +29,7 @@
     <div class="box">
       <div class="signup-container">
         <h1>Create an Account</h1>
-        <form method="post" action="signin.php">
+        <form method="post" action="register.php">
           <div class="form-group">
             <label for="fullname">Full Name</label>
             <input type="text" id="fullname" name="fullname" required />
@@ -55,13 +55,9 @@
         </form>
         <div class="login-link">
           Already have an account?
-          <a
-            href="signin.php"
-            >Log in</a
-          >
+          <a href="signin.php" >Log in</a>
         </div>
       </div>
-    </div>
-    <?php require 'css/assets/footer.html'; ?> 
+</div>
   </body>
 </html>

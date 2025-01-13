@@ -1,35 +1,30 @@
-<?php
+<?php 
 session_start();
 
 // Check if the user is logged in
 if (!isset($_SESSION['customer_id'])) {
-    // Redirect to Sign-In page if the user is not logged in
     header("Location: signin.php");
     exit();
 }
 
-include 'connect.php'; // Include your database connection file
+include 'connect.php'; 
 
 // Fetch user details using session
-$customer_id = $_SESSION['customer_id']; // Use the correct variable name
+$customer_id = $_SESSION['customer_id']; 
 
-// Use prepared statements to prevent SQL injection
 $query = "SELECT * FROM customer WHERE customer_id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $customer_id); // Bind parameter as integer
+$stmt->bind_param("i", $customer_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Check if user exists
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
 } else {
-    // Redirect to an error page or show a meaningful message
     echo "User not found.";
     exit();
 }
 
-// Close the statement and connection
 $stmt->close();
 $conn->close();
 ?>
@@ -40,123 +35,139 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
     <style>
-        h1 {
-            text-align: center;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #fffdf3;
             color: #333;
         }
-        form {
-            display: flex;
-            flex-direction: column;
+        header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: center;
+            position: relative;
         }
-        label {
-            margin-top: 10px;
+        header h1 {
+            margin: 0;
+        }
+        .logout-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            background-color: #ff6347;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
             font-weight: bold;
         }
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="date"],
-        input[type="time"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .radio-group {
-            display: flex;
-            align-items: center;
-            margin-top: 5px;
-        }
-        .radio-group label {
-            font-weight: normal;
-        }
-        button {
-            background-color: #4caf50;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #45a049;
+        .logout-button:hover {
+            background-color: #ff4c29;
         }
         .container {
-            width: 30%;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 100px;
-            margin-bottom: 50px;
+            margin: 20px;
         }
-        @media (max-width: 600px) {
-            .container {
-                width: 50%;
-                padding: 10px;
-            }
+        .buttons {
+            margin-bottom: 20px;
+        }
+        .buttons button {
+            margin-right: 10px;
+            padding: 10px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .buttons button:hover {
+            background-color: #ffeeba;
+        }
+        .section {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section.active {
+            display: block;
+        }
+        form label {
+            font-weight: bold; /* Making the labels bold */
+            display: block;
+            margin: 10px 0 5px;
+        }
+        form input, form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+        }
+        form button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
 <header>
-    <div style="
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding: 10px; 
-        background-color: #f1f1f1;">
-        <h1 style="margin: 0; font-size: 24px;">Welcome, <?php echo htmlspecialchars($user['fullname']); ?>!</h1>
-        <a href="logout.php" style="
-            text-decoration: none;
-            background-color: #4caf50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-left: auto; /* Pushes the button to the right */
-        ">Log Out</a>
-    </div>
+    <h1>Welcome, <?php echo htmlspecialchars($user['fullname']); ?>!</h1>
+    <a href="logout.php" class="logout-button">Log Out</a>
 </header>
 <div class="container">
-    <h1>Booking Form</h1>
-    <form action="process_booking.php" method="POST">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required />
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required />
-
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" required />
-
-        <label>Choose venue to book:</label>
-        <div class="radio-group">
-            <input type="radio" id="akshyapatra" name="venue" value="Akshyapatra Hall" required />
-            <label for="akshyapatra">Akshyapatra Hall</label>
-
-            <input type="radio" id="kalpavrikshya" name="venue" value="Kalpavrikshya Hall" />
-            <label for="kalpavrikshya">Kalpavrikshya Hall</label>
-
-            <input type="radio" id="garden" name="venue" value="Garden Hall" />
-            <label for="garden">Garden Hall</label>
-        </div>
-
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required />
-
-        <label for="time">Time:</label>
-        <input type="time" id="time" name="time" required />
-
-        <button type="submit">Submit Booking</button>
-    </form>
+    <div class="buttons">
+        <button onclick="showSection('booking-form')">Booking Form</button>
+        <button onclick="showSection('approved-bookings')">Approved Bookings</button>
+        <button onclick="showSection('pending-bookings')">Pending Bookings</button>
+    </div>
+    <div id="booking-form" class="section active">
+        <h2>Booking Form</h2>
+        <form action="process_booking.php" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required />
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required />
+            
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" required />
+            
+            <label>Choose venue:</label>
+            <label><input type="radio" name="venue" value="Akshyapatra Hall" required /> Akshyapatra Hall</label>
+            <label><input type="radio" name="venue" value="Kalpavrikshya Hall" /> Kalpavrikshya Hall</label>
+            <label><input type="radio" name="venue" value="Garden Hall" /> Garden Hall</label><br><br>
+            
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required />
+            
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" required />
+            
+            <button type="submit">Submit Booking</button>
+        </form>
+    </div>
+    <div id="approved-bookings" class="section">
+        <h2>Approved Bookings</h2>
+        <p>Your approved bookings will appear here.</p>
+    </div>
+    <div id="pending-bookings" class="section">
+        <h2>Pending Bookings</h2>
+        <p>Your pending bookings will appear here.</p>
+    </div>
 </div>
+
+<script>
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => section.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+    }
+</script> 
 </body>
 </html>

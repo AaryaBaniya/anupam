@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: userdash.php");
         exit();
     } else {
-        // If login fails, show an alert and redirect back to the login page
+        // If login fails, shows an alert and redirect back to the login page
         echo "<script>alert('Invalid email or password');</script>";
         echo "<script>window.location.href='signin.php';</script>";
     }

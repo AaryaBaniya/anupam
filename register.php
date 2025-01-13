@@ -26,7 +26,7 @@ if($_SERVER['HTTP_REFERER']=='http://localhost/anupam/signup.php'){
                        VALUES ('$fullname','$email','$password')";
             if($conn->query($insertQuery)==TRUE)
             {
-                header("location: sign.php");
+                header("location: signin.php");
             }
             else{
                 echo "Error:".$conn->error;
@@ -36,23 +36,23 @@ if($_SERVER['HTTP_REFERER']=='http://localhost/anupam/signup.php'){
 
 }
 
-if(isset($_POST['signin'])){
-   $email=$_POST['email'];
-   $password=$_POST['password'];
-   $password=md5($password) ;
+//if(isset($_POST['signin'])){
+   //$email=$_POST['email'];
+  // $password=$_POST['password'];
+   //$password=md5($password) ;
    
-   $sql="SELECT * FROM customer WHERE email='$email' and password='$password'";
-   $result=$conn->query($sql);
-   if($result->num_rows>0){
-    session_start();
-    $row=$result->fetch_assoc();
-    $_SESSION['email']=$row['email'];
-    header("Location: homepage.php");
-    exit();
-}
-else{
- echo "Not Found, Incorrect Email or Password";
-}
+   //$sql="SELECT * FROM customer WHERE email='$email' and password='$password'";
+   //$result=$conn->query($sql);
+   //if($result->num_rows>0){
+    //session_start();
+    //$row=$result->fetch_assoc();
+    //$_SESSION['email']=$row['email'];
+    //header("Location: homepage.php");
+    //exit();
+//}
+//else{
+ //echo "Not Found, Incorrect Email or Password";
+//}
 
-}
+//}
 ?>

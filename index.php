@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Anupam</title>
-    <link rel="stylesheet" href="css/all.min.css" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="./css/all.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
   </head>
   <body>
     <header class="page-header">
       <div class="wrapper">
         <div class="logo">
-          <a href="index.html">
+          <a href="index.php">
             <img class="img" src="Images/logo.png" alt="logo" />
           </a>
         </div>
@@ -27,10 +27,8 @@
         </nav>
       </div>
     </header>
-    <main>
+    <main style="width:100%;margin:0 32px">
       <div class="banner">
-        <div class="banner-block">
-          </div>
       </div>
       <div class="articles" id="about">
         <div class="wrapper">
@@ -137,7 +135,35 @@
         </div>
       </div>
     </main>
-     <?php require 'css/assets/footer.html'; ?> 
+    <footer class="page-footer" id="footer">
+    <div class="wrapper">
+      <div style="display: flex; justify-content: space-between">
+        <div class="footer-col" style="margin-bottom: 24px">
+          <h3>Contact Us</h3>
+          <ul>
+            <li>Phone: 9828884062</li>
+            <li>Email: anupamfoodland@gmail.com</li>
+            <li>Old Baneshwor, Kathmandu</li>
+          </ul>
+        </div>
+
+        <div class="footer-col social">
+          <h3>Social</h3>
+          <ul>
+            <li>
+              <a href="#" class="fb"><i class="fab fa-facebook"></i></a>
+            </li>
+            <li>
+              <a href="#" class="tw"><i class="fab fa-twitter"></i></a>
+            </li>
+            <li>
+              <a href="#" class="gp"><i class="fab fa-google"></i></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
    
