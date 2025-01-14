@@ -12,20 +12,30 @@ include 'connect.php';
 // Fetch user details using session
 $customer_id = $_SESSION['customer_id']; 
 
-$query = "SELECT * FROM customer WHERE customer_id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $customer_id);
-$stmt->execute();
-$result = $stmt->get_result();
+// Get user details
+$query_user = "SELECT * FROM customer WHERE customer_id = ?";
+$stmt_user = $conn->prepare($query_user);
+$stmt_user->bind_param("i", $customer_id);
+$stmt_user->execute();
+$result_user = $stmt_user->get_result();
 
-if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
+if ($result_user->num_rows > 0) {
+    $user = $result_user->fetch_assoc();
 } else {
     echo "User not found.";
     exit();
 }
 
-$stmt->close();
+
+// Fetch pending bookings for the user
+$query_pending = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'pending' ORDER BY created_at DESC";
+$stmt_pending = $conn->prepare($query_pending);
+$stmt_pending->bind_param("i", $customer_id);
+$stmt_pending->execute();
+$result_pending = $stmt_pending->get_result();
+
+$stmt_user->close();
+$stmt_pending->close();
 $conn->close();
 ?>
 
@@ -93,25 +103,18 @@ $conn->close();
         .section.active {
             display: block;
         }
-        form label {
-            font-weight: bold; /* Making the labels bold */
-            display: block;
-            margin: 10px 0 5px;
-        }
-        form input, form button {
+        table {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
             border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 8px;
+            text-align: left;
         }
-        form button {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-        }
-        form button:hover {
-            background-color: #45a049;
+        table th {
+            background-color: #f1f1f1;
         }
     </style>
 </head>
@@ -130,13 +133,13 @@ $conn->close();
         <h2>Booking Form</h2>
         <form action="process_booking.php" method="POST">
             <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required />
+            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required /><br><br>
             
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required />
+            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required /><br><br>
             
             <label for="phone">Phone:</label>
-            <input type="tel" id="phone" name="phone" required />
+            <input type="tel" id="phone" name="phone" required /><br><br>
             
             <label>Choose venue:</label>
             <label><input type="radio" name="venue" value="Akshyapatra Hall" required /> Akshyapatra Hall</label>
@@ -144,10 +147,10 @@ $conn->close();
             <label><input type="radio" name="venue" value="Garden Hall" /> Garden Hall</label><br><br>
             
             <label for="date">Date:</label>
-            <input type="date" id="date" name="date" required />
+            <input type="date" id="date" name="date" required /><br><br>
             
             <label for="time">Time:</label>
-            <input type="time" id="time" name="time" required />
+            <input type="time" id="time" name="time" required /><br><br>
             
             <button type="submit">Submit Booking</button>
         </form>
@@ -158,7 +161,30 @@ $conn->close();
     </div>
     <div id="pending-bookings" class="section">
         <h2>Pending Bookings</h2>
-        <p>Your pending bookings will appear here.</p>
+        <?php if ($result_pending->num_rows > 0): ?>
+            <table bordee="1">
+                <thead>
+                    <tr>
+                        <th>Venue</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($booking = $result_pending->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($booking['venue']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['booking_date']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['booking_time']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['created_at']); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No pending bookings found.</p>
+        <?php endif; ?>
     </div>
 </div>
 

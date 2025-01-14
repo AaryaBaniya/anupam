@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     } else {
         echo "<script>alert('Invalid username or password!');</script>";
-        echo "<script>window.location.href='adminlogin.html';</script>"; 
+        echo "<script>window.location.href='adminlogin.php';</script>"; 
     }
 
     $stmt->close();

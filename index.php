@@ -21,13 +21,13 @@
             <li><a href="#">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#footer">Contact</a></li>
-            <li><a href="adminlogin.html">Admin</a></li>
+            <li><a href="adminlogin.php">Admin</a></li>
             <li><a href="signup.php">Sign Up</a></li>
           </ul>
         </nav>
       </div>
     </header>
-    <main style="width:100%;margin:0 32px">
+    <main >
       <div class="banner">
       </div>
       <div class="articles" id="about">
