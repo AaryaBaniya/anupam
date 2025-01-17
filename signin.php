@@ -49,6 +49,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+<header class="page-header">
+      <div class="wrapper">
+        <div class="logo">
+          <a href="index.php">
+            <img class="img" src="Images/logo.png" alt="logo" />
+          </a>
+        </div>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="index.php">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="signup.php">Sign Up</a></li>
+          </ul>
+        </nav>
+      </div>
+</header>
   <div class="box">  
 <div class="signin-container">
       <h1>Sign In</h1>

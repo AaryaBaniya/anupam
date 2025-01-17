@@ -15,6 +15,11 @@ $customer_id = $_SESSION['customer_id'];
 // Get user details
 $query_user = "SELECT * FROM customer WHERE customer_id = ?";
 $stmt_user = $conn->prepare($query_user);
+
+if (!$stmt_user) {
+    die("Error preparing user query: " . $conn->error);
+}
+
 $stmt_user->bind_param("i", $customer_id);
 $stmt_user->execute();
 $result_user = $stmt_user->get_result();
@@ -26,16 +31,36 @@ if ($result_user->num_rows > 0) {
     exit();
 }
 
+// Fetch approved bookings for the user
+$query_approved = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'approved' ORDER BY created_at DESC";
+$stmt_approved = $conn->prepare($query_approved);
+
+if (!$stmt_approved) {
+    die("Error preparing approved bookings query: " . $conn->error);
+}
+
+$stmt_approved->bind_param("i", $customer_id);
+$stmt_approved->execute();
+$result_approved = $stmt_approved->get_result();
 
 // Fetch pending bookings for the user
 $query_pending = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'pending' ORDER BY created_at DESC";
 $stmt_pending = $conn->prepare($query_pending);
+
+if (!$stmt_pending) {
+    die("Error preparing pending bookings query: " . $conn->error);
+}
+
 $stmt_pending->bind_param("i", $customer_id);
 $stmt_pending->execute();
 $result_pending = $stmt_pending->get_result();
 
+// Close prepared statements
 $stmt_user->close();
+$stmt_approved->close();
 $stmt_pending->close();
+
+// Close database connection
 $conn->close();
 ?>
 
@@ -134,35 +159,52 @@ $conn->close();
         <form action="process_booking.php" method="POST">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required /><br><br>
-            
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required /><br><br>
-            
             <label for="phone">Phone:</label>
             <input type="tel" id="phone" name="phone" required /><br><br>
-            
             <label>Choose venue:</label>
             <label><input type="radio" name="venue" value="Akshyapatra Hall" required /> Akshyapatra Hall</label>
             <label><input type="radio" name="venue" value="Kalpavrikshya Hall" /> Kalpavrikshya Hall</label>
             <label><input type="radio" name="venue" value="Garden Hall" /> Garden Hall</label><br><br>
-            
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required /><br><br>
-            
             <label for="time">Time:</label>
             <input type="time" id="time" name="time" required /><br><br>
-            
             <button type="submit">Submit Booking</button>
         </form>
     </div>
     <div id="approved-bookings" class="section">
-        <h2>Approved Bookings</h2>
-        <p>Your approved bookings will appear here.</p>
+       <h2>Approved Bookings</h2>
+        <?php if ($result_approved->num_rows > 0): ?>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Venue</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($booking = $result_approved->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($booking['venue']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['booking_date']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['booking_time']); ?></td>
+                            <td><?php echo htmlspecialchars($booking['created_at']); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No approved bookings found.</p>
+        <?php endif; ?>
     </div>
     <div id="pending-bookings" class="section">
         <h2>Pending Bookings</h2>
         <?php if ($result_pending->num_rows > 0): ?>
-            <table bordee="1">
+            <table border="1">
                 <thead>
                     <tr>
                         <th>Venue</th>
@@ -187,7 +229,6 @@ $conn->close();
         <?php endif; ?>
     </div>
 </div>
-
 <script>
     function showSection(sectionId) {
         const sections = document.querySelectorAll('.section');
