@@ -4,10 +4,27 @@
 
 <head>
     <title>Admin dashboard</title>
+    <style>
+        .logout-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            background-color:rgb(85, 215, 38);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .logout-button:hover {
+            background-color: #ff4c29;
+        }
+</style>
 </head>
 
 <body>
 <h2>Booking Management</h1>
+<a href="adminlogout.php" class="logout-button">Log Out</a>
  <table border="1">
         <tr>
                 <th>ID</th>
