@@ -1,43 +1,50 @@
 <?php
-session_start(); // Start session
-include 'connect.php'; // Include your database connection file
+require_once 'connect.php';
+session_start();
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = trim($_POST['email']); // Trim input to remove extra spaces
-    $password = trim($_POST['password']);
-    $hashedPassword = md5($password); // Hash the password for comparison
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    // Check if the email and hashed password exist in the database
-    $query = "SELECT * FROM customer WHERE email = ? AND password = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ss", $email, $hashedPassword); // Use prepared statements
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Fetch user details
-        $user = $result->fetch_assoc();
-
-        // Set session variables
-        $_SESSION['customer_id'] = $user['customer_id'];
-        $_SESSION['fullname'] = $user['fullname'];
-        $_SESSION['email'] = $user['email'];
-
-        // Redirect to user dashboard
-        header("Location: userdash.php");
-        exit();
+    // Check if inputs are not empty
+    if (empty($email) || empty($password)) {
+        $error = "Please fill in all fields.";
     } else {
-        // If login fails, shows an alert and redirect back to the login page
-        echo "<script>alert('Invalid email or password');</script>";
-        echo "<script>window.location.href='signin.php';</script>";
-    }
+        // Query to check credentials and role
+        $sql = "SELECT * FROM customer WHERE email = ? AND password = ?";
+        $stmt = $conn->prepare($sql);
+        $hashedPassword = md5($password); // Hash the password before checking
+        $stmt->bind_param("ss", $email, $hashedPassword);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    // Close the statement and connection
-    $stmt->close();
-    $conn->close();
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+
+            // Set session variables
+            $_SESSION['customer_id'] = $user['customer_id'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['fullname'] = $user['fullname'];
+
+            if ($user['role'] === 'admin') {
+                // Redirect to admin dashboard
+                header('Location: admindash.php');
+            } else {
+                // Redirect to userdashboard
+                header('Location: userdash.php');
+            }
+            exit;
+        } else {
+            // Invalid credentials
+            $error = "Invalid email or password.";
+        }
+
+        // Close the statement and connection
+        $stmt->close();
+        $conn->close();
+    }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -45,17 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sign In</title>
-    <link rel="stylesheet" href="css/all.min.css" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="./css/all.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
 <header class="page-header">
       <div class="wrapper">
-        <div class="logo">
-          <a href="index.php">
-            <img class="img" src="Images/logo.png" alt="logo" />
-          </a>
-        </div>
         <nav class="main-nav">
           <ul>
             <li><a href="index.php">Home</a></li>
@@ -66,10 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </nav>
       </div>
 </header>
-  <div class="box">  
-<div class="signin-container">
-      <h1>Sign In</h1>
-        <form method="post" action="signin.php">
+<div class="box">  
+    <div class="signin-container">
+        <h1>Sign In</h1>
+        <form method="POST" action="signin.php">
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required />
@@ -80,7 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <button type="submit">Sign In</button>
         </form>
-        <?php if (isset($error)): ?>
+        <!-- Display error message -->
+        <?php if (!empty($error)): ?>
             <p style="color: red;"><?php echo $error; ?></p>
         <?php endif; ?>
     </div>

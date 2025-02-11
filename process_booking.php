@@ -4,6 +4,11 @@ if (!isset($_SESSION['customer_id'])) {
     header("Location: signin.php");
     exit();
 }
+$booking_date = $_POST['date'];
+if (new DateTime($booking_date) < new DateTime('now')) {
+    die("Invalid booking date. Please select a future date.");
+}
+
 
 include 'connect.php';
 

@@ -1,38 +1,26 @@
 <?php
 require_once 'connect.php';
 
-if (isset($_GET['customer_id']) && !empty($_GET['customer_id'])) {
-    //access granted
-    $id = (int)$_GET['customer_id']; //data type casting
+if (isset($_GET['booking_id']) && !empty($_GET['booking_id'])) {
+    $booking_id = (int)$_GET['booking_id'];
 
-    if ($id <= 0) {
-        //cross checking if invalid id passed from url query e.g. id=asdjdas
-        header('location: admindash.php');
-        exit;
-    }
+    if ($booking_id > 0) {
+        $sql = "DELETE FROM bookings WHERE booking_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
 
-    //cross checking from if the error id value is passed from url query string e.g. id=13211513351
-    $sql_1 = "SELECT * FROM bookings WHERE customer_id = " . $id;
-    $query_1 = mysqli_query($conn, $sql_1);
-
-    //validates if there is data in a table or not.
-    if (mysqli_num_rows($query_1) <= 0) {
-        header('location: admindash.php');
-        exit;
-    }
-
-    $sql = "DELETE FROM bookings WHERE customer_id = " . $id;
-    $query = mysqli_query($conn, $sql);
-
-    if ($query) {
-        //success
-        header('location: admindash.php');
-        exit;
+        if ($stmt->affected_rows > 0) {
+            header('Location: admindash.php?msg=Booking deleted');
+        } else {
+            header('Location: admindash.php?msg=Error: Booking not found');
+        }
+        $stmt->close();
     } else {
-        header('location: admindash.php');
-        exit;
+        header('Location: admindash.php?msg=Invalid Booking ID');
     }
 } else {
-    header('location: admindash.php');
-    exit;
+    header('Location: admindash.php?msg=No Booking ID provided');
 }
+?>
+

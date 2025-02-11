@@ -5,13 +5,13 @@ if (isset($_GET['booking_id']) && !empty($_GET['booking_id'])) {
     $booking_id = (int)$_GET['booking_id'];
 
     if ($booking_id > 0) {
-        $sql = "UPDATE bookings SET status = 'approved' WHERE booking_id = ?";
+        $sql = "UPDATE bookings SET status = 'declined' WHERE booking_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $booking_id);
         $stmt->execute();
 
         if ($stmt->affected_rows > 0) {
-            header('Location: admindash.php?msg=Booking approved');
+            header('Location: admindash.php?msg=Booking declined');
         } else {
             header('Location: admindash.php?msg=Error: Booking not found');
         }

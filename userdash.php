@@ -55,14 +55,28 @@ $stmt_pending->bind_param("i", $customer_id);
 $stmt_pending->execute();
 $result_pending = $stmt_pending->get_result();
 
+// Fetch declined bookings
+$query_declined = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'declined' ORDER BY created_at DESC";
+$stmt_declined = $conn->prepare($query_declined);
+
+if (!$stmt_declined) {
+    die("Error preparing declined bookings query: " . $conn->error);
+}
+
+$stmt_declined->bind_param("i", $customer_id);
+$stmt_declined->execute();
+$result_declined = $stmt_declined->get_result();
+
 // Close prepared statements
 $stmt_user->close();
 $stmt_approved->close();
 $stmt_pending->close();
+$stmt_declined->close();
 
 // Close database connection
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -74,31 +88,32 @@ $conn->close();
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #fffdf3;
+            background-color: #ffffff; 
             color: #333;
         }
         header {
-            background-color: #f1f1f1;
+            background-color: #f9f9f9;
             padding: 10px;
             text-align: center;
             position: relative;
         }
         header h1 {
             margin: 0;
+            color: #eebb5d; 
         }
         .logout-button {
             position: absolute;
             top: 15px;
             right: 15px;
             padding: 8px 15px;
-            background-color: #ff6347;
+            background-color: #eebb5d; 
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
         }
         .logout-button:hover {
-            background-color: #ff4c29;
+            background-color: #d9a84c; 
         }
         .container {
             margin: 20px;
@@ -109,19 +124,20 @@ $conn->close();
         .buttons button {
             margin-right: 10px;
             padding: 10px;
-            background-color: #ddd;
+            background-color: #eebb5d; 
             border: none;
             border-radius: 3px;
             cursor: pointer;
+            color: white; 
         }
         .buttons button:hover {
-            background-color: #ffeeba;
+            background-color: #d9a84c; 
         }
         .section {
             display: none;
             margin-top: 20px;
             padding: 10px;
-            background-color: white;
+            background-color: #f9f9f9; 
             border: 1px solid #ddd;
             border-radius: 5px;
         }
@@ -139,9 +155,84 @@ $conn->close();
             text-align: left;
         }
         table th {
-            background-color: #f1f1f1;
+            background-color: #eebb5d; 
+            color: white; 
+        }
+        
+        form {
+            background-color: #f9f9f9; 
+            border: 2px solid #eebb5d; 
+            border-radius: 8px; 
+            padding: 20px; 
+            max-width: 500px; /
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            margin: auto; 
+        }
+        label {
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 8px; 
+            color: #333; 
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="time"] {
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 20px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+        }
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+        button {
+            background-color: #eebb5d; 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background-color 0.3s ease; 
+        }
+        button:hover {
+            background-color: #d9a84c; 
         }
     </style>
+    <script>
+
+function restrictPastDates() {
+            const dateInput = document.getElementById('date');
+            const today = new Date();
+            const formattedToday = today.toISOString().split('T')[0];
+            dateInput.min = formattedToday;
+        }
+
+        // Validate form inputs before submission
+        function validateBookingForm() {
+            const phone = document.getElementById('phone').value;
+            const date = document.getElementById('date').value;
+
+            const phoneRegex = /^[0-9]{10}$/; // Ensure phone number is exactly 10 digits
+            if (!phoneRegex.test(phone)) {
+                alert("Please enter a valid 10-digit phone number.");
+                return false;
+            }
+
+            if (new Date(date) < new Date()) {
+                alert("The booking date cannot be in the past.");
+                return false;
+            }
+
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', restrictPastDates);
+    </script>
 </head>
 <body>
 <header>
@@ -153,27 +244,45 @@ $conn->close();
         <button onclick="showSection('booking-form')">Booking Form</button>
         <button onclick="showSection('approved-bookings')">Approved Bookings</button>
         <button onclick="showSection('pending-bookings')">Pending Bookings</button>
+        <button onclick="showSection('declined-bookings')">Declined Bookings</button>
     </div>
     <div id="booking-form" class="section active">
-        <h2>Booking Form</h2>
-        <form action="process_booking.php" method="POST">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required /><br><br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required /><br><br>
-            <label for="phone">Phone:</label>
-            <input type="tel" id="phone" name="phone" required /><br><br>
-            <label>Choose venue:</label>
-            <label><input type="radio" name="venue" value="Akshyapatra Hall" required /> Akshyapatra Hall</label>
-            <label><input type="radio" name="venue" value="Kalpavrikshya Hall" /> Kalpavrikshya Hall</label>
-            <label><input type="radio" name="venue" value="Garden Hall" /> Garden Hall</label><br><br>
-            <label for="date">Date:</label>
-            <input type="date" id="date" name="date" required /><br><br>
-            <label for="time">Time:</label>
-            <input type="time" id="time" name="time" required /><br><br>
-            <button type="submit">Submit Booking</button>
-        </form>
-    </div>
+    <h2>Booking Form</h2>
+    <form action="process_booking.php" method="POST" onsubmit="return validateBookingForm()">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['fullname']); ?>" required /><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required /><br><br>
+
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required /><br><br>
+
+        <label>Choose Venue:</label><br>
+        <?php 
+        include 'connect.php';
+        $sql = "SELECT name FROM venue ORDER BY id ASC";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while ($venue = $result->fetch_assoc()) {
+                echo '<label><input type="radio" name="venue" value="' . htmlspecialchars($venue['name']) . '" required /> ' . htmlspecialchars($venue['name']) . '</label><br>';
+            }
+        } else {
+            echo '<p>No venues available for booking.</p>';
+        }
+        ?><br>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required /><br><br>
+
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" required /><br><br>
+
+        <button type="submit">Submit Booking</button>
+    </form>
+</div>
+</div>
     <div id="approved-bookings" class="section">
        <h2>Approved Bookings</h2>
         <?php if ($result_approved->num_rows > 0): ?>
@@ -228,6 +337,32 @@ $conn->close();
             <p>No pending bookings found.</p>
         <?php endif; ?>
     </div>
+    <div id="declined-bookings" class="section">
+    <h2>Declined Bookings</h2>
+    <?php if ($result_declined->num_rows > 0): ?>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Venue</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($booking = $result_declined->fetch_assoc()): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($booking['venue']); ?></td>
+                        <td><?php echo htmlspecialchars($booking['booking_date']); ?></td>
+                        <td><?php echo htmlspecialchars($booking['booking_time']); ?></td>
+                        <td><?php echo htmlspecialchars($booking['created_at']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>No declined bookings found.</p>
+    <?php endif; ?>
 </div>
 <script>
     function showSection(sectionId) {
